@@ -13,7 +13,7 @@ double[][] stringPixelMatrix;
 
 void setup() {
   size(500, 500);
-  frameRate(240);
+  frameRate(60);
 
   img = loadImage("Eye.jpg");  // Load your image
   img.loadPixels();  // Make sure to load the pixels of the image
@@ -27,6 +27,7 @@ void setup() {
   screwPath= new ArrayList<Integer>();
   screwPath.add(1);
   screwPath.add(5);
+
 
   screwLocations= new int[amountScrews][2];
   int k=0;
@@ -48,7 +49,8 @@ void setup() {
       pixelValues[x][y] = 1-((red(img.pixels[loc])+blue(img.pixels[loc])+green(img.pixels[loc]))/765);
     }
   }
-
+  //To delete
+  stringPixelMatrix
 }
 
 void draw() {
@@ -74,24 +76,40 @@ void draw() {
     int x2=screwLocations[screw2][0];
     int y2=screwLocations[screw2][1];
 
-    println("x1:",x1);
-    println("y1:",y1);
-    println("x2:",x2);
-    println("y2:",y2);
+    // println("x1:",x1);
+    // println("y1:",y1);
+    // println("x2:",x2);
+    // println("y2:",y2);
     line(x1,y1,x2,y2);
 
   }
 
-
+  for (int i = 0; i < stringPixelMatrix.length; i++) {
+    for (int j = 0; j < stringPixelMatrix[0].length; j++) {
+      int x = i+xOffset;
+      int y = j+yOffset;
+      
+      // Simulate some pixel data (you can replace this with your own logic)
+      float colorSomething=255*(1-(float)stringPixelMatrix[i][j]);
+      
+      // Set the color of the pixel at (x, y)
+      set(x, y, color(colorSomething,colorSomething,colorSomething));
+    }
+  }
+  
+  // Update the display with the modified pixel data
+  updatePixels();
 
   strokeWeight(1);
   stroke(0);
   noFill();
   circle(width/2,height/2, width);
+
   
   // image(img, xOffset, yOffset);  // Display the image
-  // println("Dist:");
-  // println(PtLDist(3,10,mouseX,height-mouseY));
+  println(calcErr(pixelValues,stringPixelMatrix));
+    // println("Darkness:");
+  // println(darkness(PtLDist(3,10,mouseX,height-mouseY)));
   //noLoop();
 }
 
@@ -138,7 +156,41 @@ float calcErr(double[][] imageData,double[][] pixelsm){
   }
 }
 
+double darkness(double dist){
+  float value=min((float)(0.8/dist),0.5);
+  if(value<0.1){
+    return 0;
+  }
+  return (double)value;
+}
 
+double[][] updateLine(double[][] ogPixels,int x1,int y1,int x2,int y2){
+  int rows = ogPixels.length;
+  int cols = ogPixels[0].length;
+  double[][] newPixels = new double[rows][cols];
+
+  //Infinite line, this could cause problems although I think they will be minor
+  int m=(y2-y1)/(x2-x1);
+  int c=y1-(m*x1);
+
+
+  // Copying elements from the original array to the new array
+  for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+          newPixels[i][j] = ogPixels[i][j];
+      }
+  }
+
+  for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        int cellX=xOffset+i;
+        int cellY=yOffset+j;
+        newPixels[i][j]+=darkness(PtLDist(m,c,cellX,cellY));
+      }
+  }
+  return newPixels;
+
+}
 
 //double imageHeight(int radius, int imageHeight){
 //  println("2*radius:", 2*radius);
