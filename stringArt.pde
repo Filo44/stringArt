@@ -50,11 +50,28 @@ void setup() {
     }
   }
   //To delete
-  stringPixelMatrix
+  // stringPixelMatrix=updateLine(stringPixelMatrix,1,5);
 }
 
 void draw() {
   background(255);
+
+  float minError=calcErr(pixelValues,stringPixelMatrix);
+  int bestScrew=-1;
+  for(int i=0;i<amountScrews;i++){
+    if(i!=screwPath.get(screwPath.size()-1)){
+      float thisError=calcErr(pixelValues,updateLine(stringPixelMatrix,screwPath.get(screwPath.size()-1),i));
+      if(thisError<minError){
+        minError=thisError;
+        bestScrew=i;
+      }
+    }
+  }
+  if(bestScrew!=-1){
+    screwPath.add(screwPath.get(screwPath.size()-1));
+    screwPath.add(bestScrew);
+  }
+
 
   //render screws
   stroke(255,0,0);
@@ -99,15 +116,17 @@ void draw() {
   
   // Update the display with the modified pixel data
   updatePixels();
+  
 
   strokeWeight(1);
   stroke(0);
   noFill();
   circle(width/2,height/2, width);
 
+
   
   // image(img, xOffset, yOffset);  // Display the image
-  println(calcErr(pixelValues,stringPixelMatrix));
+  // println(calcErr(pixelValues,stringPixelMatrix));
     // println("Darkness:");
   // println(darkness(PtLDist(3,10,mouseX,height-mouseY)));
   //noLoop();
@@ -141,7 +160,6 @@ double PtLDist(double lM,double lC,double pX,double pY){
   return (double)dist((float)pX,(float)pY,(float)icX,(float)icY);
 }
 
-
 float calcErr(double[][] imageData,double[][] pixelsm){
   float errorA=0;
   if(imageData.length==pixelsm.length && imageData[0].length==pixelsm[0].length){
@@ -164,13 +182,25 @@ double darkness(double dist){
   return (double)value;
 }
 
-double[][] updateLine(double[][] ogPixels,int x1,int y1,int x2,int y2){
+double[][] updateLine(double[][] ogPixels,int firstScrew,int secondScrew){
+  int x1=screwLocations[firstScrew][0];
+  int y1=screwLocations[firstScrew][1];
+  int x2=screwLocations[secondScrew][0];
+  int y2=screwLocations[secondScrew][1];
+
   int rows = ogPixels.length;
   int cols = ogPixels[0].length;
   double[][] newPixels = new double[rows][cols];
 
   //Infinite line, this could cause problems although I think they will be minor
-  int m=(y2-y1)/(x2-x1);
+  int m;
+  if(x2==x1){
+    m=(y2-y1)/(x2-(x1+1));
+  }else if(y1==y2){
+    m=0;
+  }else{
+    m=(y2-y1)/(x2-x1);
+  }
   int c=y1-(m*x1);
 
 
@@ -191,15 +221,3 @@ double[][] updateLine(double[][] ogPixels,int x1,int y1,int x2,int y2){
   return newPixels;
 
 }
-
-//double imageHeight(int radius, int imageHeight){
-//  println("2*radius:", 2*radius);
-//  println("(radius*radius)",(radius*radius));
-//  println("-(imageHeight*imageHeight)/4",-(imageHeight*imageHeight)/4);
-//    println("(radius*radius)",(radius*radius));
-//  println("(radius*radius)-(imageHeight*imageHeight)/4:",(radius*radius)-(imageHeight*imageHeight)/4);
-//  println("sqrt((radius*radius)-(imageHeight*imageHeight)/4):", sqrt((radius*radius)-(imageHeight*imageHeight)/4));
-//  println("-2*sqrt((radius*radius)-(imageHeight*imageHeight)/4):", -2*sqrt((radius*radius)-(imageHeight*imageHeight)/4));
-
-//  return (2*radius)-2*sqrt((radius*radius)-((imageHeight*imageHeight)/4));
-//}
